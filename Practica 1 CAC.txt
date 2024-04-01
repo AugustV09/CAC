@@ -1,0 +1,713 @@
+1) 1	8000H	00000101	00000000	
+
+   2	8000H	00000101	00000011			
+
+   3	7FFEH	00000101	00000011	
+
+   4	7FFCH	00000101	00000011
+
+   5	7FFAH	00000101	00000011	
+
+   6	7FFCH	00000101	00000011
+
+   7	7FFEH	00000101	00000101	
+
+   8	8000H	00000101	00000011	
+
+
+2) 1	8000H	8000H
+
+   2	8000H	7FFCH	
+
+   3	7FFEH	7FFEH
+
+   4	7FFCH	-----
+
+   5	7FFAH	7FFEH
+
+   6	7FFCH	7FFCH
+
+   7	7FFEH	8000H
+
+   8	8000H	8000H
+
+   9 END
+
+
+3)	VALOR SP	CONTENIDO
+
+	7FFEH		2000H
+
+	7FFEH		2000H
+
+	8000H		?
+
+	8000H		?
+
+	7FFEH		2004H
+
+	7FFEH		2004H
+
+	8000H		?
+
+	8000H		?
+
+a) Las acciones que tienen lugar al ejecutarse la instrucción call rut:
+-Al ejecutarse la istruccion call rut se carga la dirrecion de retorno en la pila, es decir, la direccion de la proxima instruccion a ejecutar luego de la subrutina (por lo cual se le resta 2 al SP), y el IP comienza a apuntar a celda donde se encuentra la subrutina rut
+ 
+b) Las acciones que tienen lugar al ejecutarse la instrucción ret:
+-Al ejecutarse el ret, se desapila lo mas inmediato de la pila, LO CUAL DEBERIA SER LA DIRECCION DE RETORNO CARGADA CUANDO SE EJECUTO EL CALL, y asi el IP comienza a apuntar a la celda de la direccion de retorno. (El SP aumenta en 2).
+
+
+4)
+
+6_a) 
+        org 1000h
+NUM1    db 5
+NUM2    db 3
+RES     db 0
+        org 2000h
+        mov al,0
+        mov ah, NUM1
+        cmp ah,0
+        jz FIN
+        mov ch,NUM2
+        cmp ch,0
+        jz FIN
+loop:   add al,ah
+        dec ch
+        jnz loop
+	mov RES,al
+FIN:    hlt
+        end 
+
+b) 
+        org 1000h
+NUM1    db 5
+NUM2    db 3
+RES     db 0
+        org 2000h
+        mov al,0
+        mov ah, NUM1
+        cmp ah,0
+        jz FIN
+        mov ch,NUM2
+        cmp ch,0
+        jz FIN
+        call MUL
+	mov RES,al
+FIN:    hlt
+
+        org 3000H
+MUL:    add al,ah
+        dec ch
+        jnz MUL  
+        ret
+        end
+
+b1) 
+        org 1000h
+NUM1    db 5
+NUM2    db 3
+RES     db 0
+        org 2000h
+        cmp NUM1,0
+        jz FIN
+        cmp NUM2,0
+        jz FIN
+        mov al,0
+        mov ah, NUM1
+        mov ch,NUM2
+        call MUL
+	mov RES,al
+FIN:    hlt
+
+        org 3000H
+MUL:    add al,ah
+        dec ch
+        jnz MUL  
+        ret
+        end
+
+c) 
+        org 1000h
+NUM1    db 5
+NUM2    db 3
+RES     db 0
+        org 2000h
+        cmp NUM1,0
+        jz FIN
+        cmp NUM2,0
+        jz FIN
+        mov dl,0
+        mov ax, offset num1
+        mov cx, offset num2
+        call MUL
+        mov RES,dl
+FIN:    hlt
+
+        org 3000H
+MUL:    mov bx,ax
+        add dl,[bx]
+        mov bx,cx
+        dec byte ptr [bx]
+        jnz MUL  
+        ret
+        end
+
+d) 
+        org 1000h
+NUM1    db 5
+NUM2    db 3
+RES     db 0
+        org 2000h
+        cmp NUM1,0
+        jz FIN
+        cmp NUM2,0
+        jz FIN
+        mov dl,0 
+        mov ah,0
+        mov al,num1
+        mov ch,0
+        mov cl,num2
+        push ax
+        push cx
+        call MUL
+        pop cx
+        pop ax
+        mov RES,dl
+FIN:    hlt
+
+        org 3000H
+MUL:    push bx
+        mov bx,sp
+        push ax
+        push cx
+        add bx,4
+        mov cx,[bx]  ; ¿conviene pasarle a CL solo?
+        add bx,2
+        mov ax,[bx]  ; ¿conviene pasarle a AL solo?
+loop:   add dl,al
+        dec cl
+        jnz loop  
+        pop cx
+        pop ax
+        pop bx
+        ret
+        end
+
+e) 
+        org 1000h
+NUM1    db 5
+NUM2    db 3
+RES     db 0
+
+        org 2000h
+        cmp NUM1,0
+        jz FIN
+        cmp NUM2,0
+        jz FIN
+        mov dl,0 
+        mov ax, offset num1
+        mov cx, offset num2
+        push ax
+        push cx
+        call MUL
+        pop cx
+        pop ax
+        mov RES,dl
+FIN:    hlt
+
+        org 3000H
+MUL:    push bx
+        mov bx,sp
+        push ax
+        push cx
+        add bx,4
+        mov cx,[bx]  
+        add bx,2
+	mov ax,[bx]
+        mov bx,cx
+        mov cx,[bx]
+        mov bx,ax
+        mov ax,[bx] 
+loop:   add dl,al
+        dec cl
+        jnz loop  
+        pop cx
+        pop ax
+        pop bx
+        ret
+        end
+
+8_a) 
+        org 1000h
+cadena  db "abcdefghijk"
+corte	db 0
+        org 3000h
+LONGITUD:  
+        cmp byte ptr[bx],00
+        jz fin
+        inc bx
+        inc ax
+        jmp LONGITUD
+fin:    ret    
+
+
+        org 2000h
+        mov bx, offset cadena
+        mov ax,0
+        call LONGITUD 
+        hlt
+        end
+
+b) 
+        org 1000h
+cadena  db "aBcR123!h"
+corte   db 0
+        org 3000h
+CONTAR_MIN:
+        push cx
+        push dx
+LOOP: 
+        mov cl,[bx]
+        cmp cl,00
+        jz fin
+        inc bx
+        cmp dh,cl
+        js LOOP
+        cmp cl,'a'
+        js LOOP
+        inc ax
+        jmp LOOP
+fin:    pop dx
+        pop cx
+        ret    
+
+
+        org 2000h
+        mov bx, offset cadena
+        mov ax,0
+        mov dh,'z'
+        call CONTAR_MIN
+        hlt
+        end
+
+c)
+        org 1000h
+vocales db "aeiouAEIOU"
+car     db "h"
+corte   db 0
+
+        org 3000h
+ES_VOCAL: 
+        push dx
+        push bx
+        push ax
+        mov cl,0FFh
+LOOP: 
+        cmp al,[bx]
+        jz fin
+        inc bx
+        dec ah
+        jnz LOOP
+        mov cl,00h
+fin:    pop ax
+        pop bx
+        pop dx
+        ret      
+
+
+        org 2000h
+        mov al,car
+        mov ah, offset car - offset vocales
+        mov bx, offset vocales
+        mov cx,0
+        call ES_VOCAL 
+        hlt
+        end
+
+d)
+        org 1000h
+vocales db "aeiouAEIOU"
+cadena  db "abcde"
+corte   db 0
+
+
+        org 3000h
+CONTAR_VOC:
+        push ax
+        push bx
+        push dx
+LOOP2:  mov al,[bx]
+        inc bx
+        cmp al,00
+        jz fin2
+        push bx
+        mov bx,dx
+        call ES_VOCAL
+        cmp cl,0ffh
+        jnz NO
+        inc ch
+NO:     pop bx
+        jmp LOOP2
+fin2:   pop dx
+        pop bx
+        pop ax
+        ret
+
+
+
+ES_VOCAL: 
+        push dx
+        push bx
+        push ax
+        mov cl,0FFh
+LOOP: 
+        cmp al,[bx]
+        jz fin
+        inc bx
+        dec ah
+        jnz LOOP
+        mov cl,00h
+fin:    pop ax
+        pop bx
+        pop dx
+        ret    
+
+
+        org 2000h
+        mov bx, offset cadena
+        mov dx,offset vocales
+        mov ch,0
+        mov ah,offset cadena-offset vocales
+        call CONTAR_VOC 
+        hlt
+        end
+
+e)        
+	org 1000h
+cadena  db "aaaaaa"
+corte   db 0
+car     db 'a'
+
+
+        org 3000h
+CONTAR_CAR:
+        push bx
+        mov bx,sp
+        push ax
+        push dx
+        add bx,4
+        mov cx,[bx]
+        add bx,2
+        mov bx,[bx]
+LOOP:   mov al,[bx]
+        cmp al,0
+        jz fin
+        inc bx
+        cmp al,ch
+        jnz LOOP
+        inc cl
+        jmp LOOP
+fin:    pop dx
+        pop ax
+        pop bx
+        ret
+
+
+        org 2000h
+        mov cl,0
+        mov ch,car
+        mov dx,offset cadena
+        push dx
+        push cx
+        call CONTAR_CAR 
+        pop ax
+        pop dx
+        hlt
+        end
+
+f)
+          org 1000h
+cadena    db "aaaaaa"
+corte     db 0
+original  db 'a'
+reemplazo db 'b'
+
+
+        org 3000h
+REEMPLAZAR_CAR:
+        push bx
+        mov bx,sp
+        push ax
+        push cx
+        add bx,4
+        mov ax,[bx]
+        add bx,2
+        mov bx,[bx]
+        
+loop:   mov cl,[bx]
+        cmp cl,0
+        jz fin
+        cmp cl,al
+        jnz seguir
+        mov [bx],ah
+seguir: inc bx
+        jmp loop
+        
+fin:    pop cx
+        pop ax
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset cadena
+        mov al,original
+        mov ah,reemplazo
+        push bx
+        push ax
+        call REEMPLAZAR_CAR 
+        pop ax
+        pop dx
+        hlt
+        end
+
+9-a)
+        org 1000h
+bits    db 10
+
+
+        org 3000h
+ROTARIZQ:
+        add cl,cl
+        adc cl,0
+        mov [bx],cl
+        ret
+
+
+        org 2000h
+        mov cl,bits
+        mov bx,offset bits
+        call ROTARIZQ
+        hlt
+        end
+
+b)      org 1000h
+bits    db 10
+N       db 6
+
+        org 3000h
+ROTARIZQ_N:
+        cmp ch,0
+        jz fin
+        call ROTARIZQ
+        dec ch
+        jnz ROTARIZQ_N
+fin:    ret
+        
+ROTARIZQ:
+        add cl,cl
+        adc cl,0
+        mov [bx],cl
+        ret
+
+
+        org 2000h
+        mov cl,bits
+        mov ch,N
+        mov bx,offset bits
+        call ROTARIZQ_N
+        hlt
+        end
+        
+c)
+				org 1000h
+bits    db 10
+N       db 15
+
+        org 3000h
+ROTARDER_N: ;Rotar a la derecha N veces una cadena de H bits, equivale a mover H-N posiciones a la izquierda  
+        push cx
+        push ax
+        push bx
+        push dx
+        cmp ch,0
+        jz fin2
+LOOP2:  sub ch,8
+        js operacion
+        jz fin2
+        jmp LOOP2
+operacion:
+        neg ch
+        call ROTARIZQ_N
+fin2:   pop dx
+        pop bx
+        pop ax
+        pop cx
+        ret
+
+ROTARIZQ_N:
+        push cx
+        push ax
+        push bx
+        push dx
+LOOP:   cmp ch,0
+        jz fin
+        mov cl,[bx]
+        call ROTARIZQ
+        dec ch
+        jnz LOOP
+        pop dx
+        pop bx
+        pop ax
+        pop cx
+fin:    ret
+        
+ROTARIZQ:
+        push cx
+        push ax
+        push bx
+        push dx
+        add cl,cl
+        adc cl,0
+        mov [bx],cl
+        pop dx
+        pop bx
+        pop ax
+        pop cx
+        ret
+
+
+        org 2000h
+        mov cl,bits
+        mov ch,N
+        mov bx,offset bits
+        call ROTARDER_N
+        hlt
+        end
+        
+10)
+        org 1000h
+dato1   dw 1234h
+dato2   dw 5678h
+
+
+
+        org 3000h
+SWAP:
+        push bx
+        mov bx,sp
+        push ax
+        push cx
+        push dx
+        add bx,4
+        mov cx,[bx]  ;copio en CX la direccion de dato1
+        add bx,2
+        mov ax,[bx]  ;copio en AX la direccion de dato2
+        mov bx,ax
+        mov dx,[bx]  ;copio en DX el dato2
+        mov bx,cx
+        mov cx,[bx]  ;copio en CX el dato1 y mantengo en BX la direccion de dato1
+        xor dx,cx
+        xor cx,dx
+        xor dx,cx
+        mov [bx],cx  ;en la direccion de dato1 guardo dato2
+        mov bx,ax
+        mov [bx],dx  ;en la direccion de dato2 guardo dato1
+fin:    pop dx
+        pop cx
+        pop ax
+        pop bx
+        ret
+
+        org 2000h
+        mov cx,offset dato1
+        mov ax,offset dato2
+        push ax
+        push cx
+        call SWAP
+        pop cx
+        pop ax
+        hlt
+        end
+
+11-a)
+
+        org 1000h
+dato1   db 11
+dato2   db 3
+
+        org 3000h
+DIV:
+        push bx
+        mov bx,sp
+        push cx
+        push dx
+        push ax
+        add bx,6
+        mov cx,[bx]
+        mov ax,0
+LOOP:   sub cl,ch
+        js fin
+        inc ax
+        jmp LOOP
+fin:    sub bx,2
+        mov [bx],ax
+        pop ax
+        pop dx
+        pop cx
+        pop bx
+        ret
+
+
+
+        org 2000h
+        mov cl,dato1
+        mov ch,dato2
+        push cx
+        push ax
+        call DIV
+        pop ax
+        pop cx
+        hlt
+        end
+
+11-b) 
+
+        org 1000h
+dato1   db 15
+dato2   db 3
+res     db ?
+
+        org 3000h
+RESTO:
+        push bx
+        push cx
+        push dx
+        push ax
+LOOP:   sub cl,ch
+        js fin
+        jmp LOOP
+fin:    add cl,ch
+        mov [bx],cl
+        pop ax
+        pop dx
+        pop cx
+        pop bx
+        ret
+
+
+
+        org 2000h
+        mov cl,dato1
+        mov ch,dato2
+        mov bx,offset res
+        call RESTO
+        hlt
+        end
+
+12) a)La subrutina es recursiva y lo que hace es ir sumando CX y AX mientras decrementa AX hasta que sea cero.
+b) El valor final de CX sera 6.
+c) La mayor limitacion para el valor mas grande de AX sera la memoria porque la recursividad implica un gran gasto de memoria debido a la direccion de retorno se va acumulando en la pila, lo cual significa que los retornos pueden llegar a superponerse con las instrucciones
