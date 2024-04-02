@@ -711,3 +711,102 @@ fin:    add cl,ch
 12) a)La subrutina es recursiva y lo que hace es ir sumando CX y AX mientras decrementa AX hasta que sea cero.
 b) El valor final de CX sera 6.
 c) La mayor limitacion para el valor mas grande de AX sera la memoria porque la recursividad implica un gran gasto de memoria debido a la direccion de retorno se va acumulando en la pila, lo cual significa que los retornos pueden llegar a superponerse con las instrucciones
+
+13)FORMA 1:
+        org 1000h
+N       dw 6
+
+        org 3000h
+SUMA_RECU:
+        cmp cx,0
+        jnz seguir
+        mov dx,0 
+        jmp fin
+seguir: dec cx
+        call SUMA_RECU
+        inc cx
+        add dx,cx
+fin:    ret
+
+
+        org 2000h
+        mov cx,N
+        call SUMA_RECU
+        hlt
+        end
+
+FORMA 2:
+        org 1000h
+N       dw 6
+
+        org 3000h
+SUMA_RECU:
+        cmp cx,0
+        jnz seguir 
+        jmp fin
+seguir: add dx,cx
+        dec cx
+        call SUMA_RECU
+fin:    ret
+
+
+        org 2000h
+        mov cx,N
+        mov dx,0
+        call SUMA_RECU
+        hlt
+        end
+
+14)
+        org 1000h
+vector dw 15,12,-4,5 
+long   dw 4
+
+        org 3000h
+SUMAR_PILA:
+        push bx
+        mov bx,sp
+        push cx 
+        push dx
+
+        add bx,4
+        mov cx,[bx]  ;desapilo el long en la subrutina
+
+        mov ax,0  ;pongo el acumulador en 0
+
+        call RECURSION
+        
+        pop dx
+        pop cx
+        pop bx
+        ret
+
+RECURSION:
+        cmp cx,0
+        jz fin
+        add bx,2
+        add ax,[bx]
+        dec cx
+        call RECURSION
+fin:    ret
+
+        org 2000h
+        mov cx, long 
+        mov bx, offset vector 
+        
+loop:   mov ax, [bx]  ;apilo el vector
+        push ax 
+        add bx, 2 
+        dec cx 
+        jnz loop 
+        mov cx, long 
+        push cx 
+        call SUMAR_PILA 
+        
+        pop cx  ;desapilo el long
+        
+loop2:  pop ax  ;desapilo el vector
+        dec cx 
+        jnz loop2 
+        hlt 
+        end 
