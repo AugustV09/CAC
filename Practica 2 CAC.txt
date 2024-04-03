@@ -1,0 +1,344 @@
+3_a)
+        org 1000h
+car     db 1
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+loop:   int 7
+        inc byte ptr[bx]
+        dec cl
+        jnz loop
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset car
+        mov al,1
+        mov cl,255
+        call IMPRESION
+        int 0 
+        end 
+
+b)
+        org 1000h
+ini     db 'A'
+fin     db 'Z'
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+loop:   int 7
+        inc byte ptr[bx]
+        dec ah
+        jnz loop
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset ini
+        mov al,1
+        mov ah,fin
+        sub ah,ini
+        inc ah
+        call IMPRESION
+        int 0 
+        end 
+
+VERSION 2:
+        org 1000h
+ini     db "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+fin	db ?
+
+        org 2000h
+        mov bx,offset ini
+        mov al,offset fin - offset ini
+	int 7
+        int 0 
+        end 
+
+c)VERSION 1:
+        org 1000h
+ini     db '0'
+fin     db '9'
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+loop:   int 7
+        inc byte ptr[bx]
+        dec ah
+        jnz loop
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset ini
+        mov al,1
+        mov ah,fin
+        sub ah,ini
+        inc ah
+        call IMPRESION
+        int 0 
+        end 
+
+VERSION 2:
+        org 1000h
+ini     db '0123456789'
+fin	db ?
+
+        org 2000h
+        mov bx,offset ini
+        mov al,offset fin - offset ini
+	int 7
+        int 0 
+        end 
+
+d)
+        org 1000h
+ini     db '0'
+fin	db '9'
+lf      db 10
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+loop:   int 7
+        mov dx,bx
+        mov bx,cx
+        int 7
+        mov bx,dx
+        inc byte ptr[bx]
+        dec ah
+        jnz loop
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset ini
+        mov al,1
+	mov ah,ini
+	sub ah,fin
+	inc ah
+        mov cx,offset lf
+        call IMPRESION
+        int 0 
+        end 
+
+VERSION 2:
+        org 1000h
+ini     db "0123456789"
+lf      db 10
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+loop:   int 7
+	inc bx
+        mov dx,bx
+        mov bx,cx
+        int 7
+        mov bx,dx
+        dec ah
+        jnz loop
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset ini
+        mov al,1
+	mov ah,offset lf - offset ini
+        mov cx,offset lf
+        call IMPRESION
+        int 0 
+        end 
+
+
+e)
+        org 1000h
+ini     db 'A'
+fin     db 'Z'
+minus   db 'a'
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+loop:   int 7
+        inc byte ptr[bx]
+        mov dx,bx
+        mov bx,cx
+        int 7
+        inc byte ptr[bx]
+        mov bx,dx
+        dec ah
+        jnz loop
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset ini
+        mov al,1
+        mov ah,fin
+        sub ah,ini
+        inc ah
+        mov cx,offset minus
+        call IMPRESION
+        int 0 
+        end 
+
+VERSION 2:
+        org 1000h
+ini     db "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+minus   db 'a'
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+loop:   int 7
+        inc bx
+        mov dx,bx
+        mov bx,cx
+        int 7
+        inc byte ptr[bx]
+        mov bx,dx
+        dec ah
+        jnz loop
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov bx,offset ini
+        mov al,1
+	mov ah,offset minus - offset de ini
+        mov cx,offset minus
+        call IMPRESION
+        int 0 
+        end 
+
+VERSION 3:
+        org 1000h
+ini     db "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz"
+fin	db ?
+
+        org 2000h
+        mov bx,offset ini
+        mov al,offset fin - offset ini
+	int 7
+        int 0 
+        end 
+
+4_a)
+        org 1000h
+num     db ?
+msj     db " elefantes se balanceaban..."
+fin     db ?
+
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+        mov bx,offset num ; ¿Deberia poder hacer offset de num?
+        add ah,'0'
+        mov [bx],ah
+        mov al,offset fin-offset num  ; ¿Deberia mandar esto y la direccion en BX en el programa principal?
+        int 7
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov ah,9
+        call IMPRESION
+        int 0 
+        end 
+
+b) 
+        org 1000h
+X       db ?
+Y       db ?
+msj     db " elefantes se balanceaban..."
+fin     db ?
+
+
+        org 3000h
+IMPRESION:
+        push bx
+        push cx
+        push ax
+        push dx
+        mov bx, offset Y ; ¿Deberia poder hacer offset de Y?
+        add cl,'0'
+        mov [bx],cl
+        mov bx,offset X ; ¿Deberia poder hacer offset de X?
+        add ch,'0'
+        mov [bx],ch
+        mov al,offset fin-offset X  ; ¿Deberia mandar esto y la direccion en BX en el programa principal?
+        int 7
+        pop dx
+        pop ax
+        pop cx
+        pop bx
+        ret
+
+
+        org 2000h
+        mov cl,9    ; Y
+        mov ch,0   ; X
+        call IMPRESION
+        int 0 
+        end 

@@ -523,7 +523,7 @@ ROTARIZQ:
         end
         
 c)
-				org 1000h
+	org 1000h
 bits    db 10
 N       db 15
 
