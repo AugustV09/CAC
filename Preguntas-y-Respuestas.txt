@@ -1,0 +1,18 @@
+¿Que son las direcciones de la interrupcion en el vector de interrupciones?
+	-Indica la direccion en memoria de la interrupcion (la direccion ocupa 4 bytes)
+
+
+¿Debe pushearse la IP y los FLAGS antes de llamar a la interrupcion?
+   -Debemos pushear todo nosotros mismos
+	
+   ¿Debemos pushear los registros tambien? PREGUNTAR
+      -
+
+
+¿Debemos pushear los FLAGS dentro de las subrutinas? PREGUNTAR
+   -
+
+
+¿Buffer?
+   -Se encarga de controlar la diferenica de velocidades entre la CPU y la memoria y los perifericos. (no muy seguro)
+   -Es un memoria de funcion especifica, siendo mas lenta que el cache.
