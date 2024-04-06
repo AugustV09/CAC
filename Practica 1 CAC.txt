@@ -309,13 +309,13 @@ LOOP:
         cmp al,[bx]
         jz fin
         inc bx
-        dec ah
+        dec ah  ; AH contiene la cantidad de vocales
         jnz LOOP
-        mov cl,00h
+        mov cl,00h  ; CL acaba indicando si el caracter es vocal o no
 fin:    pop ax
         pop bx
         pop dx
-        ret      
+        ret  
 
 
         org 2000h
@@ -339,16 +339,16 @@ CONTAR_VOC:
         push ax
         push bx
         push dx
-LOOP2:  mov al,[bx]
+LOOP2:  mov al,[bx] ;AL contiene el caracter de la palabra
         inc bx
-        cmp al,00
+        cmp al,00  ;me fijo que el caracter no sea cero
         jz fin2
         push bx
-        mov bx,dx
+        mov bx,dx  ;DX contiene la direccion de las vocales
         call ES_VOCAL
         cmp cl,0ffh
         jnz NO
-        inc ch
+        inc ch   ;CH contiene la cantidad de vocales
 NO:     pop bx
         jmp LOOP2
 fin2:   pop dx
@@ -367,13 +367,13 @@ LOOP:
         cmp al,[bx]
         jz fin
         inc bx
-        dec ah
+        dec ah  ; AH contiene la cantidad de vocales
         jnz LOOP
-        mov cl,00h
+        mov cl,00h  ; CL acaba indicando si el caracter es vocal o no
 fin:    pop ax
         pop bx
         pop dx
-        ret    
+        ret
 
 
         org 2000h

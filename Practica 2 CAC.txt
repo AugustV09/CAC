@@ -353,16 +353,16 @@ CONTAR_VOC:
         push ax
         push bx
         push dx
-LOOP2:  mov al,[bx] ;al contiene el caracter de la palabra
+LOOP2:  mov al,[bx] ;AL contiene el caracter de la palabra
         inc bx
         cmp al,00  ;me fijo que el caracter no sea cero
         jz fin2
         push bx
-        mov bx,dx
+        mov bx,dx  ;DX contiene la direccion de las vocales
         call ES_VOCAL
         cmp cl,0ffh
         jnz NO
-        inc ch
+        inc ch   ;CH contiene la cantidad de vocales
 NO:     pop bx
         jmp LOOP2
 fin2:   pop dx
@@ -381,9 +381,9 @@ LOOP:
         cmp al,[bx]
         jz fin
         inc bx
-        dec ah  ; ah contiene la cantidad de vocales
+        dec ah  ; AH contiene la cantidad de vocales
         jnz LOOP
-        mov cl,00h  ; cl acaba indicando si el caracter es vocal o no
+        mov cl,00h  ; CL acaba indicando si el caracter es vocal o no
 fin:    pop ax
         pop bx
         pop dx
@@ -412,7 +412,7 @@ BUCLE:
     ORG 2000H
 
     MOV BX, OFFSET N
-    MOV AL,4
+    MOV AL,10
     CALL leer_str_n
     ADD BL,AL
     MOV BYTE PTR[BX],0
@@ -424,3 +424,202 @@ BUCLE:
     HLT
     END
 
+b)
+    ORG 1000H
+car db "AEIOUaeiou"
+N   DB 1
+
+
+    ORG 3000H
+CONTAR_VOC:
+        push ax
+        push bx
+        push dx
+LOOP2:  mov al,[bx] ;AL contiene el caracter de la palabra
+        inc bx
+        cmp al,00  ;me fijo que el caracter no sea cero
+        jz fin2
+        push bx
+        mov bx,dx  ;DX contiene la direccion de las vocales
+        call ES_VOCAL
+        cmp cl,0ffh
+        jnz NO
+        inc ch   ;CH contiene la cantidad de vocales
+NO:     pop bx
+        jmp LOOP2
+fin2:   pop dx
+        pop bx
+        pop ax
+        ret
+
+
+
+ES_VOCAL: 
+        push dx
+        push bx
+        push ax
+        mov cl,0FFh
+LOOP: 
+        cmp al,[bx]
+        jz fin
+        inc bx
+        dec ah  ; AH contiene la cantidad de vocales
+        jnz LOOP
+        mov cl,00h  ; CL acaba indicando si el caracter es vocal o no
+fin:    pop ax
+        pop bx
+        pop dx
+        ret
+
+leer_str_car:
+    push bx
+    push cx
+    push dx
+    MOV DX,BX
+BUCLE:
+    int 6
+    CMP [BX],CH  ;Comparo el caracter recien ingresado con '.'
+    JZ SEGUIR    ;Si el caracter es '.' corta y no suma a AL o BX
+    INC BX
+    INC AL
+    JMP BUCLE
+SEGUIR:
+    MOV BX,DX
+    int 7
+    pop dx
+    pop cx
+    pop bx
+    ret
+
+    ORG 2000H
+
+    MOV BX, OFFSET N
+    MOV CH, '.'
+    MOV AL,0  ; Esta bien que me devuelva la cantidad de caracteres de la palabra???
+    CALL leer_str_car
+    ADD BL,AL
+    MOV BYTE PTR[BX],0
+    MOV BX,OFFSET N
+    mov ch,0
+    mov dx,offset car
+    MOV AH,OFFSET N - OFFSET CAR
+    call contar_voc  ; (la funcion de cada parametros esta arriba)
+    HLT
+    END
+
+6)
+     ORG 1000H
+L    db 10
+MSJ  db "Ingresar un dígito del 0 al 9"
+MSJ2 DB "Carácter inválido: solo dígitos del 0 al 9"
+VEC  DB ?
+
+
+    ORG 3000H
+es_digito:    ; No pusheo CX porque CH devuelve si es digito o no
+    push bx
+    push dx
+    push ax   
+    mov ch,0 ; CH devuelve 1 si el codigo ASCII esta entre '0' y '9' o devuelve 0 en caso contrario
+    cmp ah,'0'  ; AH tiene el caracter a evaluar si es un digito en ASCII
+    js fin_es_dig
+    sub ah,'9'   ; La comparacion deberia ser al reves pero no puedo y por eso esta el NEG
+    neg ah
+    js fin_es_dig
+    mov ch,1
+fin_es_dig:
+    pop ax
+    pop dx
+    pop bx
+    ret
+
+leer_digito:    ; No pusheo CX porque CL devuelve el digito como numero
+    push bx
+    push dx
+    push ax
+bucle:
+    mov dx,bx
+    mov bx,offset MSJ     ; Primero imprimo el "ingrese..."
+    mov al,offset MSJ2 - offset MSJ
+    int 7
+    mov bx,dx
+    int 6
+    mov ah,[bx]
+    call es_digito
+    cmp ch,1
+    mov dx,bx
+    mov bx,offset L    ; Imprimo un salto de linea para que quede ordenado
+    mov al, 1
+    int 7 
+    mov bx,dx
+    jz fin_leer_dig
+    mov dx,bx
+    mov bx,offset MSJ2    ; Si el caracter no era digito, imprimo la respuesta a ello
+    mov al, offset vec - offset MSJ2
+    int 7
+    mov bx,dx
+    jmp bucle
+fin_leer_dig:
+    mov cl,[bx]
+    sub cl,'0'    ;La resta onvierte al numero caracter en numero REAL
+    pop ax
+    pop dx
+    pop bx
+    ret
+
+leer_vector:    ; AH contiene la cantidad de elementos del vector y BX la direccion del mismo
+    push bx
+    push cx
+    push dx
+    push ax
+loop:
+    call leer_digito
+    mov [bx],cl
+    inc bx
+    dec ah
+    jnz loop
+    pop ax
+    pop dx
+    pop cx
+    pop bx
+    ret
+
+max_num:    ; DL contiene un numero, DH otro numero y DL sale con el mayor de los 2
+    push ax
+    push cx
+    push bx
+    cmp dl,dh    ; Si la operacion da con signo, si quiero hacer el intercambio entre los numeros
+    jns fin_max_num
+    xor dl,dh
+    xor dh,dl
+    xor dl,dh
+fin_max_num:
+    pop bx
+    pop cx
+    pop ax
+    ret
+
+max_vector:    ; DL sale con el mayor numero del vector
+    push cx
+    push ax
+    push bx
+    mov dl,[bx]  ; Cargo primero en DL para aprovechar el LOOP y que despues se cargue siempre en DH y se compare con el de DL
+    dec ah
+seguir:
+    inc bx
+    mov dh,[bx]
+    call max_num
+    dec ah
+    jnz seguir
+    pop bx
+    pop ax
+    pop cx
+    ret
+    
+    ORG 2000H
+    mov bx,offset vec
+    mov ah,20
+    call leer_vector
+    call max_vector
+    HLT
+    END
