@@ -548,7 +548,7 @@ bucle:
     call es_digito
     cmp ch,1
     mov dx,bx
-    mov bx,offset L    ; Imprimo un salto de linea para que quede ordenado
+    mov bx,offset L    ; (OPCIONAL) Imprimo un salto de linea para que quede ordenado
     mov al, 1
     int 7 
     mov bx,dx
@@ -567,8 +567,8 @@ fin_leer_dig:
     pop bx
     ret
 
-leer_vector:    ; AH contiene la cantidad de elementos del vector y BX la direccion del mismo
-    push bx
+leer_vector:    ; AH contiene la cantidad de elementos del vector
+    push bx      ;BX la direccion del mismo
     push cx
     push dx
     push ax
@@ -621,5 +621,76 @@ seguir:
     mov ah,20
     call leer_vector
     call max_vector
+    HLT
+    END
+
+7)
+     ORG 1000H
+LF   db 10
+MSJ  db "Acceso permitido"
+MSJ2 DB "Acceso denegado"
+BLOQ DB "Acceso BLOQUEADO"
+COPY DB "HOLA"
+PASS DB ?
+
+
+    ORG 3000H
+leer_contra:
+    push ax
+    push bx
+    push cx
+    push dx
+    mov ch,al  ; Esta linea hace que CH tenga siempre un respaldo de AL
+seguir:
+    mov dx,bx  ; Copio la direccion de PASS en DX para tener un respaldo
+entrada:    ; Realizo el ingreso de PASS
+    int 6
+    inc bx
+    dec al
+    jnz entrada  ; entrada continua hasta que no falten mas caracteres por ingresar
+    mov al,ch  ; recupero la cantidad de caracteres de PASS
+    mov bx,dx  ; recupero la direccion de PASS
+    push bx    ; Me guardo el contenido de PASS (no me quedan registros)
+comp_pass:
+    mov dh,[bx]
+    sub bl,ch    ; utilizo CH para para desplazar BX a la direccion de COPY
+    mov dl,[bx]
+    add bl,ch    ; Utilizo CH para hacer que BX tenga la direccion de PASS nuevamente
+    inc bx
+    dec al  ; AL controla que no me quede sin caracteres que comparar
+    js no_comp  ; AL debe ser -1 para que salga de la comparacion (si sucede es porque las contraseñas son iguales)
+    cmp dl,dh
+    jz comp_pass  ; Si no salta es porque las contraseñas son diferentes
+    mov bx,offset MSJ2
+    mov al,offset BLOQ - offset MSJ2
+    int 7    ; Imprimo "Acceso denegado"
+    mov bx, offset LF
+    mov al,1
+    int 7    ; Imprimo un SALTO de LINEA para que haya orden
+    pop bx    ;Recuperacion necesaria del avlor de BX para la siguiente vuelta
+    mov al,ch  ; Recupero la cantidad de caracteres en AL para la siguiente vuelta
+    dec ah
+    jnz seguir
+    mov bx,offset BLOQ
+    mov al, offset COPY - offset BLOQ
+    int 7    ; Imprimo "Acceso BLOQUEADO"
+    jmp fin_leer_contra
+no_comp:
+    mov bx,offset MSJ
+    mov al, offset MSJ2 - offset MSJ
+    int 7    ; Imprimo "Acceso permitido"
+    pop bx   ; Debe estar para que no se rompa el programa en caso de que la contraseña sea correcta
+fin_leer_contra:
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret 
+    
+    ORG 2000H
+    mov bx,offset PASS  ; BX tiene la direccion de la contraseña a ingresar
+    mov al,4  ; AL tiene la cantidad de caracteres a ingresar
+    mov ah,5  ; AH tiene la cantidad de intentos del usuario
+    call leer_contra
     HLT
     END
