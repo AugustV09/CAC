@@ -771,3 +771,87 @@ BUCLE:
         hlt
         end
 
+e)
+PIO   equ 30H   ; POSICION DE PA
+
+      
+        org 1000h
+bits    db  ?
+
+        org 3000h
+ROTARDER_N: ;Rotar a la derecha N veces una cadena de H bits, equivale a mover H-N posiciones a la izquierda  
+        push cx
+        push ax
+        push bx
+        push dx
+        cmp ch,0
+        jz fin2
+LOOP2:  sub ch,8
+        js operacion
+        jz fin2
+        jmp LOOP2
+operacion:
+        neg ch
+        call ROTARIZQ_N
+fin2:   pop dx
+        pop bx
+        pop ax
+        pop cx
+        ret
+
+ROTARIZQ_N:
+        push cx
+        push ax
+        push bx
+        push dx
+LOOP:   cmp ch,0
+        jz fin
+        mov cl,[bx]
+        call ROTARIZQ
+        dec ch
+        jnz LOOP
+        pop dx
+        pop bx
+        pop ax
+        pop cx
+fin:    ret
+        
+ROTARIZQ:
+        push cx
+        push ax
+        push bx
+        push dx
+        add cl,cl
+        adc cl,0
+        mov [bx],cl
+        pop dx
+        pop bx
+        pop ax
+        pop cx
+        ret
+
+
+        org 2000h
+        MOV AL,0FFH ; 
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA SEA DE ENTRADA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
+        MOV AL,1H
+BUCLE:
+        OUT PIO+1,AL
+        ADD AL,AL
+        JNZ BUCLE
+        MOV AL,01000000b
+BUCLE2: 
+        OUT PIO+1,AL
+        mov cl,AL
+        mov ch,1
+        mov bx,offset bits
+        MOV [BX],AL  ; ESTA LINEA ESTA PARA RESPETAR LA ESTRUCTURA DE MI ROTAR_DERECHA PORQUE NO FUNCIONA SI NO ESTA ESTA LINEA
+        call ROTARDER_N
+        MOV AL,[BX]  ; ACTUALIZO EL CONTENIDO DE AL
+        CMP AL,1H
+        JNZ BUCLE2
+        JMP BUCLE
+        hlt
+        end
