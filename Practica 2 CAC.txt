@@ -694,3 +694,77 @@ fin_leer_contra:
     call leer_contra
     HLT
     END
+
+8_a)
+  PIO   equ 30H   
+
+        org 1000h
+
+        org 2000h
+        MOV AL,0
+        OUT PIO+3,AL
+        MOV AL,11000011B
+        OUT PIO+1,AL
+        hlt
+        end
+
+b) 
+  PIO   equ 30H   ; POSICION DE PA
+
+        org 1000h
+MSJ     DB "LLAVE PRENDIDA"
+MSJ2    DB "LLAVE APAGADA"
+FIN     DB ?
+
+        org 2000h
+        MOV AL,80H ; ESTA PRACTICA SIRVE? aunque solo ponga el bit mas ziquierdo como de entrada, sigo recibiendo todos los bits de PA
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA TENGA EL BIT MAS SIGNIFICATIVO COMO DE ENTRADA
+        IN AL,PIO
+        CMP AL,0
+        JNS OFF
+        MOV BX, OFFSET MSJ
+        MOV AL, OFFSET MSJ2 - OFFSET MSJ
+        INT 7
+        JMP TERMINE
+OFF:    MOV BX, OFFSET MSJ2
+        MOV AL, OFFSET FIN - OFFSET MSJ2
+        INT 7
+TERMINE:
+        hlt
+        end
+
+c) 
+  PIO   equ 30H   ; POSICION DE PA
+
+        org 1000h
+
+        org 2000h
+        MOV AL,0FFH ; 
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA SEA DE ENTRADA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
+BUCLE:
+        IN AL,PIO
+        OUT PIO+1, AL
+        JMP BUCLE
+        hlt
+        end
+
+d)
+  PIO   equ 30H   ; POSICION DE PA
+
+        org 1000h
+
+        org 2000h
+        MOV AL,0FFH ; 
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA SEA DE ENTRADA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
+        
+BUCLE:
+        INC AL
+        OUT PIO+1, AL
+        CMP AL,0FFH
+        JNZ BUCLE
+        hlt
+        end
