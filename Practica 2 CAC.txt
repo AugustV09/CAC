@@ -837,21 +837,186 @@ ROTARIZQ:
         MOV AL,0
         OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
         MOV AL,1H
-BUCLE:
+BUCLE:			; ESTE BUCLE ES PARA IR DE DERECHA A IZQUIERDA
         OUT PIO+1,AL
         ADD AL,AL
         JNZ BUCLE
         MOV AL,01000000b
-BUCLE2: 
+BUCLE2: 		; ESTE BUCLE ES PARA IR DE IZQUIERDA A DERECHA
         OUT PIO+1,AL
         mov cl,AL
         mov ch,1
         mov bx,offset bits
-        MOV [BX],AL  ; ESTA LINEA ESTA PARA RESPETAR LA ESTRUCTURA DE MI ROTAR_DERECHA PORQUE NO FUNCIONA SI NO ESTA ESTA LINEA
+        MOV [BX],AL  ; ESTA LINEA ESTA PARA RESPETAR LA ESTRUCTURA DE MI ROTAR_DERECHA PORQUE NO FUNCIONARIA
         call ROTARDER_N
         MOV AL,[BX]  ; ACTUALIZO EL CONTENIDO DE AL
         CMP AL,1H
         JNZ BUCLE2
         JMP BUCLE
+        hlt
+        end
+
+9_a)
+PIO   equ 30H   ; POSICION DE PA
+
+      
+        org 1000h
+
+
+        org 3000h
+
+
+        org 2000h
+        MOV AL,11111101b ; STROBE COMO SALIDA Y BUSY COMO ENTRADA (______SB)
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA FUNCIONE COMO DEBE PARA LA IMPRESORA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB (DATOS) SEA DE SALIDA
+        MOV AL,'A'
+        OUT PIO+1,AL
+BUCLE:
+        IN AL,PIO
+        AND AL,1
+        JNZ BUCLE
+        MOV AL, 0
+        OUT PIO,AL
+        MOV AL, 0FFH
+        OUT PIO,AL   ; ¿POR QUE NO IMPRIME?
+        hlt
+        end
+b)
+PIO   equ 30H   ; POSICION DE PA
+
+      
+        org 1000h
+MSJ     db  "ORGANIZACION Y ARQUITECTURA DE COMPUTADORAS"
+FIN     DB ?
+
+        org 3000h
+
+
+        org 2000h
+        MOV AL,11111101b ; STROBE COMO SALIDA Y BUSY COMO ENTRADA (______SB)
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA FUNCIONE COMO DEBE PARA LA IMPRESORA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB (DATOS) SEA DE SALIDA
+        MOV BX,OFFSET MSJ
+        MOV AH,OFFSET FIN- OFFSET MSJ
+BUCLE:
+        MOV AL,[BX]  
+        OUT PIO+1,AL   ; COLOCO EL CARACTER EN PB
+BUCLE2:
+        IN AL,PIO
+        AND AL,1   ; REVISO QUE BUSY=0 Y SINO SIGO REVISANDO HASTA QUE SEA 0
+        JNZ BUCLE2
+        MOV AL, 0
+        OUT PIO,AL   ; SEÑAL DESCENDENTE
+        MOV AL, 0FFH
+        OUT PIO,AL   ; SEÑAL ASCENDENTE
+        INC BX
+        DEC AH
+        JNZ BUCLE
+        hlt
+        end
+
+c) 
+PIO   equ 30H   ; POSICION DE PA
+
+      
+        org 1000h
+MSJ     db  ?
+
+
+        org 3000h
+
+
+        org 2000h
+        MOV AL,11111101b ; STROBE COMO SALIDA Y BUSY COMO ENTRADA (______SB)
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA FUNCIONE COMO DEBE PARA LA IMPRESORA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB (DATOS) SEA DE SALIDA
+        MOV AH,5
+        MOV BX,OFFSET MSJ
+BUCLE:
+        INT 6
+        MOV AL,[BX]  
+        OUT PIO+1,AL   ; COLOCO EL CARACTER EN PB
+BUCLE2:
+        IN AL,PIO
+        AND AL,1   ; REVISO QUE BUSY=0 Y SINO SIGO REVISANDO HASTA QUE SEA 0
+        JNZ BUCLE2
+        MOV AL, 0
+        OUT PIO,AL   ; SEÑAL DESCENDENTE
+        MOV AL, 0FFH
+        OUT PIO,AL   ; SEÑAL ASCENDENTE
+        INC BX
+        DEC AH
+        JNZ BUCLE
+        hlt
+        end
+
+d)
+
+10_a)Las diferencias con el ejercicio anterior son que no es necesario poner el STROBE en 0 y despues en 1 para indicar la señal descendente y ascendente, respectivamente, ya que el HANDSHAKE pone el bit de STROBE automaticamente en 0 luego de mandara a imprimir. Asimismo, el HANDSHKE por si solo lanza la impresion de lo que haya en el registro DATA cuando detecte que BUSY=0.
+
+HANDSHAKE   equ 40H   ; POSICION DEL REGISTRO DATA DEL HANDSHAKE
+
+      
+        org 1000h
+MSJ     DB  "INGENIERIA E INFORMATICA"
+FIN     DB ?
+
+
+        org 3000h
+
+
+        org 2000h
+        MOV AH,OFFSET FIN - OFFSET MSJ
+        MOV BX,OFFSET MSJ
+BUCLE:
+        IN AL,HANDSHAKE+1    
+        AND AL,1H
+        JNZ BUCLE    ; REVISO QUE BUSY=0 O ESPERO HASTA QUE BUSY SEA 0
+        MOV AL,[BX]
+        OUT HANDSHAKE,AL   ; CARGO EL CARACTER EN EL REGISTRO DATA
+                           ; (CARGAR DATA LANZA LA IMPRESION INMEDIATAMENTE SI BUSY=0 O CUANDO BUSY SE HAGA 0)
+        INC BX             ; EL HANDSHAKE PONE STROBE EN 0 AUTOMATICAMENTE DESPUES DE MANDAR A IMPRIMIR
+        DEC AH
+        JNZ BUCLE
+        hlt
+        end
+
+b)
+
+
+11_a)
+
+
+b)
+PIO   equ 30H   ; POSICION DEL REGISTRO PA
+
+      
+        org 1000h
+MSJ     DB  ?
+
+
+        org 3000h
+
+
+        org 2000h
+        MOV AL,0FFH
+        OUT PIO+2,AL  ; CONFIGURO CA PARA QUE PA SEA DE ENTRADA
+        MOV AL,0
+        OUT PIO+3,AL  ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
+        MOV BX,OFFSET MSJ
+BUCLE:
+        MOV AL,0FFH  
+        OUT PIO+1,AL  ; LE MANDO AL DISPOSITIVO LA SEÑAL PARA INDICARLE QUE ME MANDE CARACTER
+        IN AL,PIO  ; LEO EL CARACTER QUE ME MANDÓ EL DISPOSITIVO
+        CMP AL,0   ; REVISO QUE EL CARACTER RECIBIDO NO SEA 0 
+        JZ FIN
+        MOV [BX],AL  ; SALVO EL CARACTER RECIBIDO
+        INC BX  ; DEJO A BX APUNTANDO A LA SIGUIENTE POSICION EN MEMORIA
+        JMP BUCLE
+FIN:        
         hlt
         end
