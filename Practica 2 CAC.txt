@@ -771,6 +771,49 @@ BUCLE:
         hlt
         end
 
+VERSION CON INTERRUPCIONES:
+
+  PIO   equ 30H   ; POSICION DE PA
+  TIMER equ 10H   ; POSICION DEL REGISTRO CONT DEL TIMER
+  
+        org 40
+GESTOR_IMPRESORA dw GESTOR
+
+
+        ORG 3000H
+GESTOR:
+        INC BL    ; UTILIZO BL COMO CONTADOR HASTA LLEGAR A 11111111b
+        IN AL, PIO    ; ME TRAIGO LAS LLAVES
+        AND AL,BL    ; HAGO UN AND PARA CONFIRMAR QUE SE ENCIENDAN LAS LUCES QUE QUIERO
+        OUT PIO+1,AL  ; PONGO EL RESULTADO DE ANTES EN PB
+        MOV AL,0
+        OUT TIMER,AL
+        MOV AL,20H
+        OUT TIMER+10H,AL
+        IRET
+        
+        org 2000h
+        CLI
+        MOV AL,11111101b
+        OUT TIMER+11H,AL
+        MOV AL,10
+        OUT TIMER+15H,AL
+        MOV AL,0FFH ; 
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA SEA DE ENTRADA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
+        MOV BL,0
+        MOV AL,1
+        OUT TIMER+1,AL
+        MOV AL,0
+        OUT TIMER,AL
+        STI
+BUCLE:
+        CMP BL,0FFH
+        JNZ BUCLE
+        hlt
+        END
+
 e)
 PIO   equ 30H   ; POSICION DE PA
 
