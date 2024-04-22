@@ -899,6 +899,74 @@ BUCLE2: 		; ESTE BUCLE ES PARA IR DE IZQUIERDA A DERECHA
         hlt
         end
 
+VERSION CON INTERRUPCIONES:
+
+  PIO   equ 30H   ; POSICION DE PA
+  TIMER equ 10H   ; POSICION DEL REGISTRO CONT DEL TIMER
+  IMR   EQU 21H  ; POSICION DEL REGISTRO DE ENMASCARAMIENTO
+
+        ORG 40
+GESTOR_INTERRUPCION DW GESTOR
+        
+        org 1000h
+bits    db  ?
+
+
+
+        org 3000h
+GESTOR:
+        PUSH AX
+        MOV DL,0
+        MOV AL,0
+        OUT TIMER,AL
+        MOV AL,20H
+        OUT IMR-1,AL
+        POP AX
+        IRET
+
+
+        org 2000h
+        CLI
+        MOV AL, 11111101b
+        OUT IMR,AL
+        MOV AL,10
+        OUT IMR+4,AL
+        MOV AL,0FFH ; 
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA SEA DE ENTRADA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
+        MOV AL,1
+        OUT TIMER+1,AL
+        MOV AL,0
+        OUT TIMER,AL
+        MOV AL,1H
+        MOV DL,AL
+        STI
+
+BUCLE1:
+        CMP DL,0
+        JNZ BUCLE1
+        MOV DL,1
+        OUT PIO+1,AL
+        PUSH AX
+        ADD AL,AL
+        JNZ BUCLE1
+        MOV CL,7
+        POP AX
+BUCLE2:
+       
+       CMP DL,0
+       JNZ BUCLE2
+       MOV DL,1
+       OUT PIO+1,AL
+       POP AX
+       DEC CL
+       JNZ BUCLE2
+       JMP BUCLE1
+
+        hlt
+        end
+
 9_a)
 PIO   equ 30H   ; POSICION DE PA
 
