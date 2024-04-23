@@ -1067,6 +1067,66 @@ BUCLE2:
         end
 
 d)
+  PIO   equ 30H   ; POSICION DE PA
+  TIMER equ 10H   ; POSICION DEL REGISTRO CONT DEL TIMER
+  IMR   EQU 21H  ; POSICION DEL REGISTRO DE ENMASCARAMIENTO
+
+        ORG 40
+GESTOR_INTERRUPCION DW GESTOR
+        
+        org 1000h
+MSJ     db  ?
+
+
+
+        org 3000h
+GESTOR:
+        PUSH AX
+        MOV DL,0
+        MOV AL,20H
+        OUT IMR-1,AL
+        POP AX
+        IRET
+
+
+        org 2000h
+        CLI   ;INHABILITO LAS INTERRUPCIONES
+        MOV AL, 11111110b  ; ENMASCARO TODAS LAS INTERRUPCIONES MENOS LA DEL F10
+        OUT IMR,AL
+        MOV AL,10
+        OUT IMR+3,AL
+        MOV AL,11111101b ; 
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA CORRESPONDA A LA IMPRESORA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA (DATOS)
+        MOV DL,1
+        MOV DH,0
+        MOV BX,OFFSET MSJ
+        STI  ; HABILITO LAS INTERRUPCIONES
+
+BUCLE1:    
+        INT 6
+        INC BX
+        INC DH
+        CMP DL,0
+        JNZ BUCLE1 
+        CLI  ;INHABILITO LAS INTERRUPCIONES PARA QUE LA IMPRESION NO SEA INTERRUMPIDA
+        MOV BX,OFFSET MSJ
+BUCLE2:
+        IN AL,PIO  ; TOMO LO QUE HAYA EN PA PARA CHEQUEAR EL BUSY
+        AND AL,1
+        JNZ BUCLE2
+        MOV AL,[BX]
+        OUT PIO+1,AL
+        MOV AL,0
+        OUT PIO,AL
+        MOV AL,0FFH
+        OUT PIO,AL
+        INC BX
+        DEC DH
+        JNZ BUCLE2
+        hlt
+        end
 
 10_a)Las diferencias con el ejercicio anterior son que no es necesario poner el STROBE en 0 y despues en 1 para indicar la señal descendente y ascendente, respectivamente, ya que el HANDSHAKE pone el bit de STROBE automaticamente en 0 luego de mandara a imprimir. Asimismo, el HANDSHKE por si solo lanza la impresion de lo que haya en el registro DATA cuando detecte que BUSY=0.
 
@@ -1101,7 +1161,62 @@ b)
 
 
 11_a)
+  PIO   equ 30H   ; POSICION DE PA
+  TIMER equ 10H   ; POSICION DEL REGISTRO CONT DEL TIMER
+  IMR   EQU 21H  ; POSICION DEL REGISTRO DE ENMASCARAMIENTO
 
+        ORG 40
+GESTOR_INTERRUPCION DW GESTOR
+        
+        org 1000h
+MSJ     db  "UNLP"
+FIN     DB ?
+
+
+
+        org 3000h
+GESTOR:
+        PUSH AX
+        MOV DL,0
+        MOV AL,0
+        OUT TIMER,AL
+        MOV AL,20H
+        OUT IMR-1,AL
+        POP AX
+        IRET
+
+
+        org 2000h
+        CLI   ;INHABILITO LAS INTERRUPCIONES
+        MOV AL, 11111101b  ; ENMASCARO TODAS LAS INTERRUPCIONES MENOS LA DEL TIMER
+        OUT IMR,AL
+        MOV AL,10
+        OUT IMR+4,AL
+        MOV AL,0FFH ; 
+        OUT PIO+2,AL ; CONFIGURO A CA PARA QUE PA SEA DE ENTRADA
+        MOV AL,0
+        OUT PIO+3, AL ; CONFIGURO CB PARA QUE PB SEA DE SALIDA
+        MOV BX,OFFSET MSJ
+        MOV DL,1
+        MOV DH,OFFSET FIN - OFFSET MSJ
+        MOV AL,10
+        OUT TIMER+1,AL
+        MOV AL,0
+        OUT TIMER,AL
+        STI  ; HABILITO LAS INTERRUPCIONES
+
+BUCLE1:    
+        MOV AL,[BX]
+        OUT PIO+1,AL
+        INC BX
+ESPERAR:    ; ESPERO LOS 10 SEGUNDOS NECESARIOS
+        CMP DL,0
+        JNZ ESPERAR
+        MOV DL,1
+        DEC DH
+        JNZ BUCLE1
+        hlt
+        end
 
 b)
 PIO   equ 30H   ; POSICION DEL REGISTRO PA
