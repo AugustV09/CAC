@@ -1,0 +1,8 @@
+a) La instruccion que genera atasco (stall) es SD R2,A(R0) porque esa instruccion busca
+hacer STORE antes que se haga LOAD.
+El stall que aparece es Raw (READ after write). Indica que se debe LEER despues se ESCRIBIR y la instruccion no esta respetando esto.
+El promedio de ciclos por instruccion (CPI) es de 2.2 CPI.
+
+b) No se presenta ningun atasco porque los BUFFERS de la parte de EX y de MEM permite que la instruccion que generaba el atasco (SD R2,A(R0)) continue sin el valor del registro porque no es necesario hasta la etapa de MEM de la instruccion en cuestion y, cuando eso pase, el valor del registro estara almacenado en el BUFFER de MEM de la instruccion anterior (la cual se encontrara en la etapa de de WB). 
+El color de los registros en la ventana Register indica que se esta escribiendo sobre el registro o que se leyo un dato de memoria al registro (LOAD).
+El promedio de ciclos por instrucción (CPI) es de 1.8 CPI y es menor que antes gracias a que no hay atascos.

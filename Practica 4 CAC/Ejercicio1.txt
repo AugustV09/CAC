@@ -1,0 +1,9 @@
+a) La instruccion representa MOV R1,R2 porque R0 es CERO.
+
+b)La instruccion representa MOV R3,5 porque R0 es CERO.
+
+c)La instruccion representa SUB R4,R4
+
+d)La instruccion representa ADD R5,-1
+
+e)La instruccion representa XOR R6,0FFFFFFFFFFFFFFFFh

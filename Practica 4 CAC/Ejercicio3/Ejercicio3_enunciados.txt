@@ -1,0 +1,7 @@
+a) Se presentan atascos tipo RAW debido a que el 'bnez r2, loop' no puede determinar si realiza el salto o no porque todavia no cuenta con r2. Recien cuenta con r2 en el segundo RAW debido a que ahi es provisto gracias al FORWARDING.
+Branch Taken es un atasco de control que se produce por realizar una instruccion que no corresponde debido a que se saltó a una direccion de memoria que presenta otra/s instrucciones.
+El programa tiene 21 instrucciones, 36 ciclos y 1.714 ciclos por instruccion (CPI).
+
+b) Ahora generan atascos 'dsll r1, r1, 1' porque la instruccion quiere utilizar r1 y todavia no se cargó con el contenido de la memoria (no se hizo writeback) y continua generando atascos el 'bnez r2, loop' porque no cuenta con r2 hasta wl writeback del daddi previo. En ambos casos, el atasco sucede durante el DECODING y ocurre una vez en el primer caso y dos veces en el segundo caso.
+El Branch Taken dura un ciclo con FORWARDING y dos ciclos sin FORWARDING porque el salto tarda mas en comparar entre que esta habilitado o no el FORWARDING, respectivamente.
+Ahora el programa tarda 43 ciclos, se ejecutan 21 instrucciones y presenta 2.048 ciclos por instruccion (CPI).

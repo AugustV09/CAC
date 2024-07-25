@@ -1,0 +1,7 @@
+a) La opcion de Delay Slot (salto retardado) permite que se ejecute la instruccion proxima a un salto, permitiendo que no haya atascos de Branch Taken (es decir, descartar una instruccion porque se efectuó un salto).
+
+b) La instruccion NOP (no realiza ninguna operacion util) se incluye con el fin de utilizar la opcion Delay Slot y que no se ejecute la instruccion de HALT en consecuencia.
+
+c) Se registraron 63 ciclos, 59 instrucciones y un CPI de 1.068
+
+d) Se registran 56 ciclos, 52 instrucciones y 1.077 de CPI (tengo mas CPI porque la relacion CICLOS/INSTRUCCIONES resulta menor que anteriormente)

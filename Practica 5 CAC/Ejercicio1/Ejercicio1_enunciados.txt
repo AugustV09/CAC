@@ -1,0 +1,10 @@
+a) Luego de la ejecucion, tenemos 16 ciclos, 7 instruccion y un CPI de 2.286
+
+b) Se generan 4 atascos estructurales de tipo RAW. El primer atasco se debe a que la operacion de suma de punto flotante no cuenta con operando f2; el segundo y tercer atasco se deben a que SD F3, RES1(R0) no cuenta con f3 porque no hay terminado la operacion y, por ende, estaria intentando leer el registro f3 antes de que se escriba su resultado; y el cuarto atasco RAW se debe a lo mismo de antes pero con respecto a la instruccion SD F4, RES2(R0) que no cuenta con f4 porque se sigue operando con este.
+
+c) Los atascos estructurales se deben a que dos instrucciones intentan acceder a la memoria al mismo tiempo y eso no estructuralmente posible. Por eso, se produce ese tipo de atasco en las instrucciones que despues comenzaron de entre las dos que quieren acceder a la memoria.
+En este caso sucede entre la operacion de suma de punto flotante y una instruccion siguiente (NO INMEDIATAMENTE SIGUIENTE) y entre la operacion de multiplicacion de punto flotante y otra instruccion posterior, que buscan guardar el respectivo resultado en la memoria antes de que las operaciones aritmeticas cumplan con el ciclo de MEM. 
+
+d) Aparece un atasco WAR porque la primera etapa de la nueva instruccion de multiplicacion puede llegar a modificar f1 (es decir, escribiria sobre f1) antes de que la instruccion anterior lo lea ya que la misma se encuentra en un atasco RAW. Por ende, se produce el atasco para evitar la escritura antes de la lectura (WAR = ESCRITURA DESPUES DE LECTURA)
+
+e) Colocar un NOP antes de la suma soluciona el RAW y el consecuente WAR porque provee tiempo suficiente para que el ADD siguiente pueda comenzar la operacion y, por consecuencia, que el MUL siguiente al ADD no modifique el valor del registro f1
